@@ -53,26 +53,26 @@ class GameExtended(Game):
                 # TODO: could this exceed the total time
                 self.unmute()
 
-    def step(self, action, agentIndex, render = None):
+    def step(self, action, agentIndex, render=None):
         _BOINC_ENABLED = False
-        #agentIndex = self.startingIndex
+        # agentIndex = self.startingIndex
         numAgents = len(self.agents)
-        assert(not self.gameOver and agentIndex < numAgents)
-        
+        assert (not self.gameOver and agentIndex < numAgents)
+
         # Fetch the next agent
         agent = self.agents[agentIndex]
         move_time = 0
         skip_action = False
         # Generate an observation of the state
         if False and 'observationFunction' in dir(agent):
-            pass                
+            pass
         else:
             observation = self.state.deepCopy()
 
         # Execute the action
         self.moveHistory.append((agentIndex, action))
         if False and self.catchExceptions:
-            pass                
+            pass
         else:
             self.state = self.state.generateSuccessor(agentIndex, action)
 
@@ -85,12 +85,12 @@ class GameExtended(Game):
         # Track progress
         if agentIndex == numAgents + 1:
             self.numMoves += 1
-        
+
         if _BOINC_ENABLED:
             boinc.set_fraction_done(self.getProgress())
-        
+
         self.render()
-        
+
         if self.gameOver:
             self.display.finish()
 
@@ -104,7 +104,7 @@ class GameExtended(Game):
 
 
 class ClassicGameRulesExtended(ClassicGameRules):
-    def newGame(self, layout, pacmanAgent, ghostAgents, display, quiet=False, catchExceptions=False):        
+    def newGame(self, layout, pacmanAgent, ghostAgents, display, quiet=False, catchExceptions=False):
         agents = [pacmanAgent] + ghostAgents[:layout.getNumGhosts()]
         initState = GameStateExtended()
         initState.initialize(layout, len(ghostAgents))
@@ -116,19 +116,19 @@ class ClassicGameRulesExtended(ClassicGameRules):
         return game
 
 
-class GameStateExtended(GameState):   
-    def __init__( self, prevState = None ):
+class GameStateExtended(GameState):
+    def __init__(self, prevState=None):
         """
         Generates a new state by copying information from its predecessor.
         """
-        if prevState is not None: # Initial state
+        if prevState is not None:  # Initial state
             self.data = GameStateDataExtended(prevState.data)
         else:
             self.data = GameStateDataExtended()
-    
+
     def get_rewards(self):
         if self.isEnd():
-            rewards =  []
+            rewards = []
             for agentIndex in range(self._get_num_agents()):
                 rewards.append(self._get_agent_reward(agentIndex))
         else:
@@ -144,7 +144,7 @@ class GameStateExtended(GameState):
             else:
                 extra = 0
             reward = self.data.scores[agentIndex] + extra
-        else: 
+        else:
             reward = 0
         return reward
 
@@ -155,7 +155,7 @@ class GameStateExtended(GameState):
         agent_pos = int(agent_pos[0]), int(agent_pos[1])
         pacman_pos = self.data.agentStates[0].configuration.pos
         pacman_pos = int(pacman_pos[0]), int(pacman_pos[1])
-        
+
         return agent_pos == pacman_pos
 
     def _get_num_agents(self):
@@ -163,13 +163,13 @@ class GameStateExtended(GameState):
 
     def isEnd(self):
         return self.isWin() or self.isLose() or self.getScore() < -1500
-    
-    def deepCopy( self ):
-        state = GameStateExtended( self )
+
+    def deepCopy(self):
+        state = GameStateExtended(self)
         state.data = self.data.deepCopy()
         return state
-    
-    def generateSuccessor( self, agentIndex, action):
+
+    def generateSuccessor(self, agentIndex, action):
         """
         Returns the successor state after the specified agent takes the action.
         """
@@ -182,38 +182,38 @@ class GameStateExtended(GameState):
         # Let agent's logic deal with its action's effects on the board
         if agentIndex == 0:  # Pacman is moving
             state.data._eaten = [False for i in range(state.getNumAgents())]
-            PacmanRules.applyAction( state, action )
-        else:                # A ghost is moving
-            GhostRules.applyAction( state, action, agentIndex )
+            PacmanRules.applyAction(state, action)
+        else:  # A ghost is moving
+            GhostRules.applyAction(state, action, agentIndex)
 
         # Time passes
         if agentIndex == 0:
-            state.data.scoreChange += -TIME_PENALTY # Penalty for waiting around
+            state.data.scoreChange += -TIME_PENALTY  # Penalty for waiting around
         else:
-            GhostRules.decrementTimer( state.data.agentStates[agentIndex] )
+            GhostRules.decrementTimer(state.data.agentStates[agentIndex])
 
         # Resolve multi-agent effects
-        GhostRules.checkDeath( state, agentIndex )
+        GhostRules.checkDeath(state, agentIndex)
 
         # Book keeping
         state.data._agentMoved = agentIndex
         state.data.score += state.data.scoreChange
-                
-        
+
         state.data.scores[0] = state.data.score
         if agentIndex != 0:
             state.data.scores[agentIndex] += -1
 
-        assert(state.data.scores[0]==state.data.score)
+        assert (state.data.scores[0] == state.data.score)
         return state
 
-class GameStateDataExtended(GameStateData):    
-    def __init__( self, prevState = None ):        
+
+class GameStateDataExtended(GameStateData):
+    def __init__(self, prevState=None):
         super().__init__(prevState)
         if prevState != None:
             self.scores = np.copy(prevState.scores)
-        
-    def initialize( self, layout, numGhostAgents ):
+
+    def initialize(self, layout, numGhostAgents):
         """
         Creates an initial game state from a layout array (see layout.py).
         """
@@ -226,15 +226,17 @@ class GameStateDataExtended(GameStateData):
         numGhosts = 0
         for isPacman, pos in layout.agentPositions:
             if not isPacman:
-                if numGhosts == numGhostAgents: continue # Max ghosts reached already
-                else: numGhosts += 1
-            self.agentStates.append( AgentState( Configuration( pos, Directions.STOP), isPacman) )
-        
+                if numGhosts == numGhostAgents:
+                    continue  # Max ghosts reached already
+                else:
+                    numGhosts += 1
+            self.agentStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
+
         self.scores = list(np.zeros(len(self.agentStates)))
         self._eaten = [False for a in self.agentStates]
 
-    def deepCopy( self ):
-        state = GameStateDataExtended( self )
+    def deepCopy(self):
+        state = GameStateDataExtended(self)
         state.food = self.food.deepCopy()
         state.layout = self.layout.deepCopy()
         state._agentMoved = self._agentMoved

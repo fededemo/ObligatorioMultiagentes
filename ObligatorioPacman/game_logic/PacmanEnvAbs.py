@@ -17,22 +17,23 @@ from .layout import getLayout
 
 _directions = {Directions.NORTH: (0, 1),
                Directions.SOUTH: (0, -1),
-               Directions.EAST:  (1, 0),
-               Directions.WEST:  (-1, 0),
-               Directions.STOP:  (0, 0)}
+               Directions.EAST: (1, 0),
+               Directions.WEST: (-1, 0),
+               Directions.STOP: (0, 0)}
 
 _directionsAsList = list(_directions.items())
+
 
 class PacmanEnvAbs():
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, enable_render=False, layout_name="mediumClassic", view_distance = (2, 2), agents = None):
+    def __init__(self, enable_render=False, layout_name="mediumClassic", view_distance=(2, 2), agents=None):
         self.layouts = dict()
-        self.layout_name=layout_name
+        self.layout_name = layout_name
         if agents is None:
             self.pacman = KeyboardAgent()
-            self.ghosts = [RandomGhost(i+1) if i % 2 ==
-                        0 else DirectionalGhost(i+1) for i in range(20)]
+            self.ghosts = [RandomGhost(i + 1) if i % 2 ==
+                                                 0 else DirectionalGhost(i + 1) for i in range(20)]
         self.pacman = agents[0]
         self.ghosts = agents[1:]
         frameTime = 0.03
@@ -67,7 +68,7 @@ class PacmanEnvAbs():
         self.enable_render = enable_render
         self.layout_name = layout_name if layout_name is not None else self.layout_name
         if (self.game):
-            self.game.close()        
+            self.game.close()
 
         self.layouts[layout_name] = self.layouts.get(
             layout_name, getLayout(layout_name))
@@ -78,12 +79,12 @@ class PacmanEnvAbs():
             display = self.display_graphics
 
         self.game = self._init_game(
-            self.layouts[layout_name], self.pacman, self.ghosts, display)        
+            self.layouts[layout_name], self.pacman, self.ghosts, display)
         return self.game.state
 
-    def step(self, action, agentIndex):        
+    def step(self, action, agentIndex):
         self._check_action(action, agentIndex)
-        
+
         obs = self.game.step(action, agentIndex)
 
         reward = self._get_rewards()

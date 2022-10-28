@@ -14,6 +14,5 @@ class MCTSNode:
         self.player = player
 
 
-
 def ucb(node, C=sqrt(2)):
-    return node.value[node.player] / node.visits + C * sqrt(log(node.parent.visits)/node.visits)
+    return node.value[node.player] / node.visits + C * sqrt(log(node.parent.visits) / node.visits)
