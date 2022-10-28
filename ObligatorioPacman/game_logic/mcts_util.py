@@ -1,5 +1,7 @@
 from math import log, sqrt
+
 import numpy as np
+
 
 class MCTSNode:
     def __init__(self, parent, action, player, numberOfAgents):

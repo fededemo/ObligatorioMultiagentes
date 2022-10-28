@@ -25,14 +25,15 @@ code to run a game.  This file is divided into three sections:
 To play your first game, type 'python pacman.py' from the command line.
 The keys are 'a', 's', 'd', and 'w' to move (or arrow keys).  Have fun!
 """
-from .game import GameStateData
-from .game import Game
-from .game import Directions
-from .game import Actions
-from .util import nearestPoint
-from .util import manhattanDistance
+import os
+import random
 #import util, layout
-import sys, types, time, random, os
+import sys
+import time
+import types
+
+from .game import Actions, Directions, Game, GameStateData
+from .util import manhattanDistance, nearestPoint
 
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
@@ -583,7 +584,8 @@ def loadAgent(pacman, nographics):
   raise Exception('The agent ' + pacman + ' is not specified in any *Agents.py.')
 
 def replayGame( layout, actions, display ):
-    import submission, ghostAgents
+    import ghostAgents
+    import submission
     rules = ClassicGameRules()
     # If replaying, change the agent from ExpectimaxAgent to whatever agent with which you want to play
     agents = [submission.ExpectimaxAgent()] + [ghostAgents.RandomGhost(i+1) for i in range(layout.getNumGhosts())]
@@ -623,7 +625,8 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     if not beQuiet: games.append(game)
 
     if record:
-      import time, pickle
+      import pickle
+      import time
       fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
       f = file(fname, 'w')
       components = {'layout': layout, 'actions': game.moveHistory}

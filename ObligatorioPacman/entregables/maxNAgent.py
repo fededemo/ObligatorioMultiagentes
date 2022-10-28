@@ -1,8 +1,11 @@
 import random
+
+import numpy as np
+
+from game_logic import game_util, mcts_util
 from game_logic.game import Agent
 from game_logic.gameExtended import GameStateExtended
-import numpy as np
-from game_logic import mcts_util, game_util
+
 
 class MaxNAgent(Agent):
   def __init__(self, index, max_depth = 2, unroll_type = "MC", max_unroll_depth= 5, number_of_unrolls = 10, view_distance = (2,2)):

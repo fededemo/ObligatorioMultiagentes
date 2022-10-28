@@ -1,6 +1,8 @@
-from .game import Game, Directions, GameStateData, AgentState, Configuration
-from .pacman import readCommand, ClassicGameRules, GameState, GhostRules, PacmanRules, TIME_PENALTY
 import numpy as np
+
+from .game import AgentState, Configuration, Directions, Game, GameStateData
+from .pacman import TIME_PENALTY, ClassicGameRules, GameState, GhostRules, PacmanRules, readCommand
+
 
 class GameExtended(Game):
     def init(self):

@@ -1,5 +1,6 @@
-import game_logic.pacman
 import time
+
+import game_logic.pacman
 
 DRAW_EVERY = 1
 SLEEP_TIME = 0 # This can be overwritten by __init__

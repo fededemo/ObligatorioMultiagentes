@@ -1,11 +1,13 @@
-from game_logic.ghostAgents import RandomGhost
-from entregables.maxNAgent import MaxNAgent
-from game_logic.randomPacman import RandomPacman
-from game_logic.PacmanEnvAbs import PacmanEnvAbs
-import random
 import math
+import random
+
 import numpy as np
+
+from entregables.maxNAgent import MaxNAgent
 from game_logic.game_util import process_state
+from game_logic.ghostAgents import RandomGhost
+from game_logic.PacmanEnvAbs import PacmanEnvAbs
+from game_logic.randomPacman import RandomPacman
 
 all_layouts = [
         "custom1",

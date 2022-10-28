@@ -1,17 +1,19 @@
+import copy
+import random
+import sys
+from functools import reduce
+
 import gym
+import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
-from functools import reduce
-import copy
-import numpy as np
-import sys
-import random
-from .keyboardAgents import KeyboardAgent
-from .ghostAgents import DirectionalGhost, RandomGhost
-from . import textDisplay, graphicsDisplay
-from .layout import getLayout
+
+from . import graphicsDisplay, textDisplay
+from .game import Directions, Game
 from .gameExtended import ClassicGameRulesExtended, GameExtended
-from .game import Game, Directions
+from .ghostAgents import DirectionalGhost, RandomGhost
+from .keyboardAgents import KeyboardAgent
+from .layout import getLayout
 
 _directions = {Directions.NORTH: (0, 1),
                Directions.SOUTH: (0, -1),

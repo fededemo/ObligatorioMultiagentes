@@ -1,7 +1,9 @@
+import os
+import time
+import traceback
+
 from .util import *
 from .util import raiseNotDefined
-import time, os
-import traceback
 
 try:
   import boinc

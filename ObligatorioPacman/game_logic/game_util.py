@@ -1,6 +1,5 @@
 import numpy as np
 
-
 """
  Function for processing game info and such
 """

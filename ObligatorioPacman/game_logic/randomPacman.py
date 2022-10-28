@@ -1,5 +1,7 @@
 import random
+
 from .game import Agent
+
 
 class RandomPacman(Agent):
   def getAction(self, gameState):    
