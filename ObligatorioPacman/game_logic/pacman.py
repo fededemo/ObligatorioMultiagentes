@@ -35,7 +35,6 @@ import types
 from .game import Actions, Directions, Game, GameStateData
 from .util import manhattanDistance, nearestPoint
 
-
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
 ###################################################

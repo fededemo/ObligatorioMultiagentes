@@ -45,7 +45,7 @@ def run_one_layout(layout="mediumGrid"):
     env = PacmanEnvAbs(agents=agents, view_distance=(2, 2))
     game_state = env.reset(enable_render=True, layout_name=layout)
     turn_index = 0
-    while (not (done)):
+    while not done:
         view = process_state(game_state, (2, 2), turn_index)
         print(view)
 
@@ -53,8 +53,8 @@ def run_one_layout(layout="mediumGrid"):
         game_state, rewards, done, info = env.step(action, turn_index)
         turn_index = (turn_index + 1) % env._get_num_agents()
 
-    print(layout, "Pacman Won," if info["win"]
-    else "Pacman Lose,", "Scores:", game_state.get_rewards())
+    print(layout, "Pacman Won," if info["win"] else "Pacman Lose,",
+          "Scores:", game_state.get_rewards())
 
 
 if __name__ == '__main__':
