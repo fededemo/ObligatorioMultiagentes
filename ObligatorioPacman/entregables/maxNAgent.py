@@ -36,7 +36,7 @@ class MaxNAgent(Agent):
         capsule_pos = []
         for i in range(len(processed_obs)):
             for j in range(len(processed_obs[0])):
-                if processed_obs[i][j] == 6: # Pacman
+                if processed_obs[i][j] == 6:  # Pacman
                     pacman_pos = (i, j)
                 elif processed_obs[i][j] == 7 or processed_obs[i][j] == 8:  # Agent
                     agent_pos = (i, j)
@@ -81,12 +81,13 @@ class MaxNAgent(Agent):
         rewards = np.zeros(gameState.getNumAgents())
         agent_reward = 0
         if gameState.isEnd():
-            if gameState._check_ghost_has_eaten_pacman(agentIndex):
+            if agentIndex != 0 and gameState._check_ghost_has_eaten_pacman(agentIndex):
                 agent_reward = 1000 + gameState.data.scores[0]
             else:
-                agent_reward = - 10000
+                agent_reward = -10000
         else:
             agent_reward = self.reward_logic(gameState, agentIndex)
+
         rewards[agentIndex] = agent_reward
         return rewards
 
@@ -103,13 +104,14 @@ class MaxNAgent(Agent):
         :return: a numpy array with the given size and filled with the given value
         """
         empties = np.empty(size)
-        return empties.fill(value)
+        empties.fill(value)
+        return empties
 
     def maxN(self, gameState: GameStateExtended, agentIndex: int, depth: int) -> Tuple[Tuple[int, int], np.array]:
         # TODO: Implementar
         # Casos base:
         if gameState.isEnd():
-            return self.evaluationFunction(gameState, agentIndex)
+            return None, self.evaluationFunction(gameState, agentIndex)
         elif depth == 0:
             if self.unroll_type == "MC":
                 return None, self.montecarlo_eval(gameState, agentIndex)
@@ -124,11 +126,11 @@ class MaxNAgent(Agent):
         best_score_array = MaxNAgent.__nparray(-np.Inf, gameState.getNumAgents())  # np.zeros(gameState.getNumAgents())
         for action in legal_actions:
             next_game_state = gameState.generateSuccessor(agentIndex, action)
-            _, score_array = self.maxN(self, next_game_state, next_agent, depth - 1)
+            _, score_array = self.maxN(next_game_state, next_agent, depth - 1)
 
             if best_score_array[agentIndex] < score_array[agentIndex]:
                 best_action = action
-                best_score_array[agentIndex] = score_array[agentIndex]
+                best_score_array = score_array
 
         return best_action, best_score_array
 
@@ -137,6 +139,9 @@ class MaxNAgent(Agent):
 
     def random_unroll(self, gameState: GameStateExtended, agentIndex) -> np.array:
         # TODO: Implementar función
+
+        if gameState.isEnd():
+            return self.evaluationFunction(gameState, agentIndex)
 
         legal_actions = gameState.getLegalActions(agentIndex)
         random.shuffle(legal_actions)
@@ -147,48 +152,87 @@ class MaxNAgent(Agent):
         if next_game_state.isEnd():
             return self.evaluationFunction(next_game_state, agentIndex)
 
-        for d in self.max_unroll_depth:
+        for d in range(self.max_unroll_depth):
             legal_actions = next_game_state.getLegalActions(next_agent)
             random.shuffle(legal_actions)
             action_to_take = legal_actions[0]
-            next_game_state = gameState.generateSuccessor(next_agent, action_to_take)
-            next_agent = self.getNextAgentIndex(next_agent, gameState.getNumAgents())
+            next_game_state = next_game_state.generateSuccessor(next_agent, action_to_take)
+            next_agent = self.getNextAgentIndex(next_agent, next_game_state.getNumAgents())
             if next_game_state.isEnd():
                 return self.evaluationFunction(next_game_state, agentIndex)
 
         # acá retornar una evaluacion estimada
-        return np.zeros(gameState.getNumAgents())
+        return self.evaluationFunction(next_game_state, agentIndex)
 
-    def montecarlo_eval(self, gameState, agentIndex) -> np.array:
+    def montecarlo_eval(self, gameState: GameStateExtended, agentIndex: int) -> np.array:
         # TODO: Implementar función
         # Pista: usar random_unroll
-        return np.zeros(gameState.getNumAgents())
+        return self.random_unroll(gameState, agentIndex)
 
-    def montecarlo_tree_search_eval(self, gameState, agentIndex):
+    def montecarlo_tree_search_eval(self, gameState: GameStateExtended, agentIndex: int):
         # TODO: Implementar función
         # PISTA: Utilizar selection_stage, expansion_stage, random_unroll y back_prop_stage
         root = mcts_util.MCTSNode(parent=None, action=None, player=agentIndex, numberOfAgents=gameState.getNumAgents())
         state = gameState.deepCopy()
 
-        # selection stage
-        node, gameState = self.selection_stage(root, state)
-        # expansion_stage
-        node, gameState = self.expansion_stage(node, gameState)
-        # random_unroll
-        values = self.random_unroll(gameState, agentIndex)
         for _ in range(self.number_of_unrolls):
-            pass
+            # selection stage
+            node, gameState = self.selection_stage(root, state)
 
-        return np.zeros(gameState.getNumAgents())
+            # expansion_stage
+            node, gameState = self.expansion_stage(node, gameState)
 
-    def selection_stage(self, node, gameState):
+            # random_unroll
+            values = self.random_unroll(gameState, agentIndex)
+
+            # backpropagate
+            self.back_prop_stage(node, values[agentIndex])
+
+        return root.value
+
+    def selection_stage(self, node: mcts_util.MCTSNode, gameState: GameStateExtended):
         # TODO: Implementar función
-        return node, gameState
 
-    def expansion_stage(self, node, gameState):
-        # TODO: Implementar función
-        return node, gameState
+        # node.visits += 1 # TODO: Chequear si es acá!!!
 
-    def back_prop_stage(self, node, value):
+        legal_actions = gameState.getLegalActions(node.player)
+        random.shuffle(legal_actions)
+        for action in legal_actions:
+            next_game_state = gameState.generateSuccessor(node.player, action)
+            next_agent = self.getNextAgentIndex(node.player, gameState.getNumAgents())
+            child = mcts_util.MCTSNode(parent=node, action=action, player=next_agent, numberOfAgents=next_game_state.getNumAgents())
+            node.children.append(child)
+
+        if node.explored_children < len(legal_actions):
+            selected_node = node.children[node.explored_children]
+        else:
+            index = np.argmax([child.value[node.player] for child in node.children])
+            selected_node = node.children[index]
+
+        selected_state = gameState.generateSuccessor(node.player, selected_node.action)
+
+        node.explored_children += 1
+        return selected_node, selected_state
+
+    def expansion_stage(self, node: mcts_util.MCTSNode, gameState: GameStateExtended):
         # TODO: Implementar función
-        pass
+        if gameState.isEnd():
+            return node, gameState
+        else:
+            legal_actions = gameState.getLegalActions(node.player)
+            random.shuffle(legal_actions)
+            for action in legal_actions:
+                next_game_state = gameState.generateSuccessor(node.player, action)
+                next_agent = self.getNextAgentIndex(node.player, gameState.getNumAgents())
+                new_node = mcts_util.MCTSNode(parent=node, action=action, player=next_agent,
+                                              numberOfAgents=next_game_state.getNumAgents())
+                node.children.append(new_node)
+
+            return node, gameState
+
+    def back_prop_stage(self, node: mcts_util.MCTSNode, value: float):
+        # TODO: Implementar función
+        node.visits += 1
+        node.value[node.player] += value
+        if node.parent is not None:
+            self.back_prop_stage(node.parent, node.value[node.player])

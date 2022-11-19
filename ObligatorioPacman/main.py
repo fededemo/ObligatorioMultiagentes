@@ -36,17 +36,17 @@ def get_default_agents(starting_index, num_ghosts=10):
 
 def run_one_layout(layout="mediumGrid"):
     pacman_agent = RandomPacman(index=0)
-    ghost_agent_0 = RandomGhost(index=1)
-    # ghost_agent_0 = MaxNAgent(index = 1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6)
-    ghost_agent_1 = RandomGhost(index=2)
-    agents = [pacman_agent, ghost_agent_0, ghost_agent_1]
-    agents.extend(get_default_agents(3, 10))
+    # ghost_agent_0 = RandomGhost(index=1)
+    ghost_agent_0 = MaxNAgent(index=1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6)
+    # ghost_agent_1 = RandomGhost(index=2)
+    agents = [pacman_agent, ghost_agent_0]  # [pacman_agent, ghost_agent_0, ghost_agent_1]
+    # agents.extend(get_default_agents(3, 10))
     done = False
     env = PacmanEnvAbs(agents=agents, view_distance=(2, 2))
     game_state = env.reset(enable_render=True, layout_name=layout)
     turn_index = 0
     while not done:
-        view = process_state(game_state, (2, 2), turn_index)
+        view = process_state(game_state, (4, 4), turn_index)
         print(view)
 
         action = agents[turn_index].getAction(game_state)
