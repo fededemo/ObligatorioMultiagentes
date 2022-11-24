@@ -54,9 +54,12 @@ class MaxNAgent(Agent):
             if agent_status == 1:  # Agent is scared
                 reward_distance = reward_distance * -1
 
-            reward += reward_distance * 5
+            reward += reward_distance * 10
         else:  # if pacman is not visible
-            reward -= 10
+            if agent_status == 1:  # Agent is scared
+                reward += 100
+            else:
+                reward -= 10
 
         food_reward = food_count / processed_obs.shape[0] * processed_obs.shape[1]
         if agent_status == 1:  # Agent is scared
@@ -64,22 +67,19 @@ class MaxNAgent(Agent):
 
         reward += food_reward
 
-        if agent_status == 1:  # Agent is scared
-            capsule_reward = 0
-            for c_pos in capsule_pos:
-                capsule_distance = manhattanDistance(agent_pos, c_pos)
-                capsule_reward += -1 / capsule_distance
-
-            reward += capsule_reward * 2
+        # if agent_status == 1:  # Agent is scared
+        #     capsule_reward = 0
+        #     for c_pos in capsule_pos:
+        #         capsule_distance = manhattanDistance(agent_pos, c_pos)
+        #         capsule_reward += -1 / capsule_distance
+        #
+        #     reward += capsule_reward * 2
 
         return reward
 
     def evaluationFunction(self, gameState: GameStateExtended, agentIndex: int):
-        processed_obs = game_util.process_state(gameState, self.view_distance, agentIndex)
         # pensar en ponderar si llega al final del tablero para que las rewards de acá sean más altas
-        # TODO: Implementar función de evaluación que utilice "processed_obs"
         rewards = np.zeros(gameState.getNumAgents())
-        agent_reward = 0
         if gameState.isEnd():
             if agentIndex != 0 and gameState._check_ghost_has_eaten_pacman(agentIndex):
                 agent_reward = 1000 + gameState.data.scores[0]
