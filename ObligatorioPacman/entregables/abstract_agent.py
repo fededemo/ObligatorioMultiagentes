@@ -112,8 +112,10 @@ class Agent(ABC):
 
                 # el ambiente no realiza el movimiento de los otros agentes por lo que tenemos que hacerlo nosotros
                 while turn_index != self.agent_idx and not done:
-                    action = self.agents[turn_index].getAction(S)
-                    game_state, rewards, done, info = self.env.step(action, turn_index)
+                    A = self.agents[turn_index].getAction(S)
+                    S_prime, R, done, info = self.env.step(A, turn_index)
+                    R = R[turn_index]
+                    S = S_prime
                     turn_index = (turn_index + 1) % self.env._get_num_agents()
 
                 if done:
