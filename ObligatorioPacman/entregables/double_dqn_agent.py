@@ -56,27 +56,43 @@ class DoubleDQNAgent(Agent):
         if use_pretrained:
             self._load_net()
 
-    def _predict_action(self, state):
-        # with torch.no_grad():
-        state_t = self.state_processing_function(state).to(self.device)
+    def _predict_action(self, state: np.array, legal_actions: List[int] = []) -> str:
+        """
+        Dado un estado me predice el action de mayor reward (greedy).
+        :param state: state dado.
+        :param legal_actions: lista de actions legales.
+        :returns: el action con mayor reward dentro de legal actions.
+        """
+        state_t = to_tensor(state).to(self.device)
         state_t = state_t.unsqueeze(0)
-        action_t = torch.argmax(self.q_a(state_t) + self.q_b(state_t), dim=1)
-        action = action_t.item()
-        return action
 
-    def _predict_rewards(self, states: np.array, use_first: bool = True) -> np.array:
+        actions = self.q_a(state_t) + self.q_b(state_t)
+        actions = actions.squeeze(0)
+
+        if len(legal_actions) > 0:
+            actions = actions[legal_actions]
+
+        action_t = torch.argmax(actions)
+
+        if len(legal_actions) > 0:
+            action = legal_actions[action_t.item()]
+        else:
+            action = action_t.item()
+
+        return self.index_to_action[action]
+
+    def _predict_rewards(self, states: torch.Tensor, use_first: bool = True) -> np.array:
         """
         Dado una serie de estados devuelve las rewards para cada action.
         :param states: states dados.
         :param use_first: to use first network for prediction.
         :returns: la lista de rewards para cada action de cada estado.
         """
-        # with torch.no_grad():
-        state_t = self.state_processing_function(states).to(self.device)
+        states_t = states.to(self.device)
         if use_first:
-            rewards = self.q_a(state_t)
+            rewards = self.q_a(states_t)
         else:
-            rewards = self.q_b(state_t)
+            rewards = self.q_b(states_t)
         return rewards
 
     def update_weights(self):
@@ -86,13 +102,15 @@ class DoubleDQNAgent(Agent):
             mini_batch = self.memory.sample(self.batch_size)
 
             # Enviar los tensores al dispositivo correspondiente.
-            states, actions, rewards, dones, next_states = zip(*mini_batch)
+            states, actions, rewards, dones, next_states, view_distances = zip(*mini_batch)
 
-            states = to_tensor(states).to(self.device)
-            actions = to_tensor([self.actions_to_index[action] for action in actions]).long().to(self.device)
+            states = to_tensor([self.state_processing_function(st, vd, self.agent_idx)
+                                for st, vd in zip(states, view_distances)]).to(self.device)
+            actions = to_tensor([self.action_to_index[action] for action in actions]).long().to(self.device)
             rewards = to_tensor(rewards).to(self.device)
             dones = to_tensor(dones).to(self.device)
-            next_states = to_tensor(next_states).to(self.device)
+            next_states = to_tensor([self.state_processing_function(st, vd, self.agent_idx)
+                                     for st, vd in zip(next_states, view_distances)]).to(self.device)
 
             # Actualizar al azar Q_a o Q_b usando el otro para calcular el valor de los siguientes estados.
             # Para el Q elegido:

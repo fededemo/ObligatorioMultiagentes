@@ -36,9 +36,10 @@ def get_default_agents(starting_index, num_ghosts=10):
 def run_one_layout(layout="mediumGrid"):
     pacman_agent = RandomPacman(index=0)
     # ghost_agent_0 = RandomGhost(index=1)
-    ghost_agent_0 = MaxNAgent(index=1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6)
-    # ghost_agent_1 = RandomGhost(index=2)
-    agents = [pacman_agent, ghost_agent_0] #, ghost_agent_1]
+    ghost_agent_0 = MaxNAgent(index=1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6,
+                              view_distance=(4, 4))
+    ghost_agent_1 = RandomGhost(index=2)
+    agents = [pacman_agent, ghost_agent_0, ghost_agent_1]
     # agents.extend(get_default_agents(3, 10))
     done = False
     env = PacmanEnvAbs(agents=agents, view_distance=(2, 2))
@@ -59,5 +60,5 @@ def run_one_layout(layout="mediumGrid"):
 if __name__ == '__main__':
     # run_one_layout("contestClassic")
     # run_one_layout("trickyClassic")
-    # run_one_layout("originalClassic")
-    run_one_layout("smallGrid")
+    run_one_layout("originalClassic")
+    # run_one_layout("smallGrid")

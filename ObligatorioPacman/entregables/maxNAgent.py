@@ -22,7 +22,7 @@ class MaxNAgent(Agent):
     def reward_logic(self, gameState: GameStateExtended, agentIndex: int) -> float:
         """
         Function that returns the reward for the agent
-        :param state: state of the game
+        :param gameState: state of the game
         :param agentIndex: agent playing.
         :return: reward for the agent
         """

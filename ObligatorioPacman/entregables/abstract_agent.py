@@ -6,7 +6,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.notebook import tqdm
 
-from replay_memory import ReplayMemory
+from entregables.replay_memory import ReplayMemory
 from game_logic.game import Directions
 
 
@@ -73,20 +73,20 @@ class Agent(ABC):
             Directions.STOP: (0, 0)
         }
 
-        self.actions_to_index = {
-            (0, 1): 0,
-            (0, -1): 1,
-            (1, 0): 2,
-            (-1, 0): 3,
-            (0, 0): 4
+        self.action_to_index = {
+            Directions.NORTH: 0,
+            Directions.SOUTH: 1,
+            Directions.EAST: 2,
+            Directions.WEST: 3,
+            Directions.STOP: 4
         }
 
         self.index_to_action = {
-            0: (0, 1),
-            1: (0, -1),
-            2: (1, 0),
-            3: (-1, 0),
-            4: (0, 0)
+            0: Directions.NORTH,
+            1: Directions.SOUTH,
+            2: Directions.EAST,
+            3: Directions.WEST,
+            4: Directions.STOP
         }
 
     def train(self, number_episodes=50000, max_steps_episode=10000, max_steps=1000000,
@@ -101,6 +101,7 @@ class Agent(ABC):
 
             # Observar estado inicial como indica el algoritmo
             layout = random.choice(self.game_layouts)
+            view_distance = random.choice(self.view_distances)
             S = self.env.reset(enable_render=False, layout_name=layout)
 
             current_episode_reward = 0.0
@@ -119,18 +120,19 @@ class Agent(ABC):
                     break
 
                 # Seleccionar action usando una política epsilon-greedy.
-                A = self.select_action(S, current_steps=total_steps)
+                A = self.select_action(S, view_distance, current_steps=total_steps)
 
                 # Ejecutar la action, observar resultado y procesarlo como indica el algoritmo.
                 S_prime, R, done, _ = self.env.step(A, turn_index)
 
+                R = R[self.agent_idx]
                 current_episode_reward += R
                 total_steps += 1
                 steps_in_episode += 1
 
                 # Guardar la transition en la memoria
                 # Transition: ('state', 'action', 'reward', 'done', 'next_state')
-                self.memory.add(S, A, R, done, S_prime)
+                self.memory.add(S, A, R, done, S_prime, view_distance)
 
                 # Actualizar el estado
                 S = S_prime
@@ -185,44 +187,50 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def _predict_rewards(self, state: np.array) -> np.array:
+    def _predict_rewards(self, states: np.array, view_distances: Tuple[int, int]) -> np.array:
         """
         Dado un estado devuelve las rewards de cada action.
-        :param state: state dado.
+        :param states: state dado.
+        :param view_distances: visión del agente.
         :returns: la lista de rewards para cada action.
         """
         pass
 
     @abstractmethod
-    def _predict_action(self, state: np.array) -> int:
+    def _predict_action(self, state: np.array, view_distance: Tuple[int, int], legal_actions: List[int] = []) -> str:
         """
         Dado un estado me predice el action de mayor reward (greedy).
         :param state: state dado.
-        :returns: el action con mayor reward.
+        :param legal_actions: lista de actions legales.
+        :returns: el action con mayor reward dentro de legal actions.
         """
         pass
 
-    def select_action(self, state: np.array, current_steps: Optional[int] = None, train: bool = True) -> Tuple[int, int]:
+    def select_action(self, state: object, view_distance: Tuple[int, int],
+                      current_steps: Optional[int] = None, train: bool = True) -> str:
         """
         Se selecciona la action epsilongreedy-mente si se esta entrenando y completamente greedy en otro caso.
         :param state: es la observación.
+        :param view_distance: es lo que ve el agente (en distancia).
         :param current_steps: cantidad de pasos llevados actualmente. En el caso de Train=False no se tiene en
          consideracion.
         :param train: si se está entrenando, True para indicar que si, False para indicar que no.
         :returns: an action.
         """
+        legal_actions = state.getLegalActions(self.agent_idx)
+        state = self.state_processing_function(state, view_distance, self.agent_idx)
+
         if not train:
             with torch.no_grad():
-                action = self._predict_action(state)
+                action = self._predict_action(state, [self.action_to_index[la] for la in legal_actions])
         else:
             random_number = np.random.uniform()
             if random_number >= self.compute_epsilon(steps_so_far=current_steps):
-                action = self._predict_action(state)
+                action = self._predict_action(state, [self.action_to_index[la] for la in legal_actions])
             else:
-                action = np.random.choice(self.env.action_space.n)
-        return self.index_to_action[action]
+                action = random.choice(legal_actions)
+        return action
 
     @abstractmethod
     def update_weights(self):
         pass
-

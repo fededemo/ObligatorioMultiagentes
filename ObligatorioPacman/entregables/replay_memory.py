@@ -3,11 +3,11 @@ from collections import namedtuple
 from typing import List
 
 Transition = namedtuple('Transition',
-                        ('state', 'action', 'reward', 'done', 'next_state'))
+                        ('state', 'action', 'reward', 'done', 'next_state', 'view_distance'))
 
 
 # Ejemplo uso
-# nueva_tupla = Transition(state, action, reward, done, next_state)
+# nueva_tupla = Transition(state, action, reward, done, next_state, view_distance)
 class ReplayMemory:
     buffer_size: int
     memory: List
@@ -18,8 +18,8 @@ class ReplayMemory:
         self.memory = []
         self.position = 0
 
-    def add(self, state, action, reward, done, next_state):
-        nueva_tupla = Transition(state, action, reward, done, next_state)
+    def add(self, state, action, reward, done, next_state, view_distance):
+        nueva_tupla = Transition(state, action, reward, done, next_state, view_distance)
 
         if self.position == self.buffer_size:
             self.position = 0
