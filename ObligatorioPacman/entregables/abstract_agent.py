@@ -1,6 +1,7 @@
+import random
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Tuple
-import random
+
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter

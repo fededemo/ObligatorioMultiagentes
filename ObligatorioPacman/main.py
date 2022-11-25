@@ -2,6 +2,7 @@ import math
 import random
 
 import numpy as np
+
 from entregables.maxNAgent import MaxNAgent
 from game_logic.game_util import process_state
 from game_logic.ghostAgents import RandomGhost

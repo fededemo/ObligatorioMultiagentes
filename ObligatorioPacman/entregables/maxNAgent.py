@@ -5,8 +5,8 @@ import numpy as np
 
 from game_logic import game_util, mcts_util
 from game_logic.game import Agent
-from game_logic.util import manhattanDistance
 from game_logic.gameExtended import GameStateExtended
+from game_logic.util import manhattanDistance
 
 
 class MaxNAgent(Agent):
