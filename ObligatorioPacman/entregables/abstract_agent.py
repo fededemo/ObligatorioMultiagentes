@@ -9,9 +9,19 @@ from tqdm.notebook import tqdm
 
 from entregables.replay_memory import ReplayMemory
 from game_logic.game import Directions
+from game_logic.game import Agent as AgentPacman
 
 
-class Agent(ABC):
+def to_tensor(elements: np.array) -> torch.Tensor:
+    """
+    Transforma los elements en un tensor de floats
+    :param elements: numpy array de elementos.
+    :returns: un tensor cargado con los elementos dados.
+    """
+    return torch.tensor(elements, dtype=torch.float32)
+
+
+class Agent(ABC, AgentPacman):
     device: torch.device
     state_processing_function: Callable[[np.array], torch.Tensor]
     memory = ReplayMemory
@@ -33,7 +43,10 @@ class Agent(ABC):
                  learning_rate: float, gamma: float, epsilon_i: float, epsilon_f: float,
                  epsilon_anneal_time: int, episode_block: int,
                  use_pretrained: Optional[bool] = False, model_weights_dir_path: Optional[str] = './weights',
-                 save_between_steps: Optional[int] = None):
+                 save_between_steps: Optional[int] = None,
+                 view_distance=(2, 2)):
+        self.index = agent_idx  # for compatibility with the Pacman API
+        self.view_distance = view_distance
         self.agents = agents
         self.agent_idx = agent_idx
         self.use_pretrained = use_pretrained
@@ -190,11 +203,10 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def _predict_rewards(self, states: np.array, view_distances: Tuple[int, int]) -> np.array:
+    def _predict_rewards(self, states: np.array) -> np.array:
         """
         Dado un estado devuelve las rewards de cada action.
         :param states: state dado.
-        :param view_distances: visión del agente.
         :returns: la lista de rewards para cada action.
         """
         pass
@@ -207,6 +219,9 @@ class Agent(ABC):
         :param legal_actions: lista de actions legales.
         :returns: el action con mayor reward dentro de legal actions.
         """
+        pass
+
+    def getAction(self, gameState: object) -> str:
         pass
 
     def select_action(self, state: object, view_distance: Tuple[int, int],

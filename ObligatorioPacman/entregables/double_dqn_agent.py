@@ -32,12 +32,14 @@ class DoubleDQNAgent(Agent):
                  memory_buffer_size: int, batch_size: int, learning_rate: float,
                  gamma: float, epsilon_i: float, epsilon_f: float, epsilon_anneal_time: int, episode_block: int,
                  use_pretrained: Optional[bool] = False, model_weights_dir_path: Optional[str] = './weights',
-                 save_between_steps: Optional[int] = None):
+                 save_between_steps: Optional[int] = None,
+                 view_distance=(2, 2)):
         super().__init__(gym_env, agents, agent_idx, game_layouts, view_distances,
                          obs_processing_func, memory_buffer_size, batch_size, learning_rate, gamma,
                          epsilon_i, epsilon_f, epsilon_anneal_time, episode_block,
                          use_pretrained=use_pretrained, model_weights_dir_path=model_weights_dir_path,
-                         save_between_steps=save_between_steps)
+                         save_between_steps=save_between_steps,
+                         view_distance=view_distance)
 
         self.model_weights_a_path = join(self.model_weights_dir_path, 'double_DQNAgent_a.pt')
         self.model_weights_b_path = join(self.model_weights_dir_path, 'double_DQNAgent_b.pt')
@@ -94,6 +96,16 @@ class DoubleDQNAgent(Agent):
         else:
             rewards = self.q_b(states_t)
         return rewards
+
+    def getAction(self, gameState: object) -> str:
+        action = self.select_action(gameState, self.view_distance, train=False)
+
+        # state = self.state_processing_function(gameState, self.view_distance, self.agent_idx)
+        # rewards_a = self._predict_rewards(to_tensor([state]), use_first=True)
+        # rewards_b = self._predict_rewards(to_tensor([state]), use_first=False)
+        # reward = (rewards_a[0][self.action_to_index[action]].item() + rewards_b[0][self.action_to_index[action]].item()) / 2
+
+        return action
 
     def update_weights(self):
         if len(self.memory) > self.batch_size:
