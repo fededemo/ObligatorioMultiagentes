@@ -177,7 +177,13 @@ class DoubleDQNAgent(Agent):
         Carga los pesos de la red desde disco.
         """
         print(f"INFO: Using weights from: {self.model_weights_a_path} & {self.model_weights_b_path}")
-        self.q_a.load_state_dict(torch.load(self.model_weights_a_path))
-        # self.q_a.eval()
-        self.q_b.load_state_dict(torch.load(self.model_weights_b_path))
-        # self.q_b.eval()
+        if torch.cuda.is_available():
+            self.q_a.load_state_dict(torch.load(self.model_weights_a_path))
+            # self.q_a.eval()
+            self.q_b.load_state_dict(torch.load(self.model_weights_b_path))
+            # self.q_b.eval()
+        else:
+            self.q_a.load_state_dict(torch.load(self.model_weights_a_path, map_location='cpu'))
+            # self.q_a.eval()
+            self.q_b.load_state_dict(torch.load(self.model_weights_b_path, map_location='cpu'))
+            # self.q_b.eval()
