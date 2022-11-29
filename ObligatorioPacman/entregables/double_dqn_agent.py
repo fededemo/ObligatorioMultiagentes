@@ -184,6 +184,4 @@ class DoubleDQNAgent(Agent):
             # self.q_b.eval()
         else:
             self.q_a.load_state_dict(torch.load(self.model_weights_a_path, map_location='cpu'))
-            # self.q_a.eval()
             self.q_b.load_state_dict(torch.load(self.model_weights_b_path, map_location='cpu'))
-            # self.q_b.eval()
