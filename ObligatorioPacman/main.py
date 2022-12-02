@@ -86,7 +86,7 @@ def run_one_layout(layout="mediumGrid"):
         net_a,
         net_b,
         [],  # not used for training
-        2,   # not used for training
+        AGENT_INDEX,   # not used for training
         [],  # not used for training
         [],  # not used for training
         process_state,
