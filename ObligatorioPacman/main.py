@@ -69,7 +69,7 @@ def run_one_layout(layout="mediumGrid"):
     pacman_agent = RandomPacman(index=0)
     # ghost_agent_0 = RandomGhost(index=1)
     ghost_agent_0 = MaxNAgent(index=1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6,
-                              view_distance=(20, 20))
+                              view_distance=(30, 30))
 
     net_a = DQN_Model(input_size=MATRIX_SIZE * MATRIX_SIZE, n_actions=ACTION_SPACE_N).to(DEVICE)
     net_b = DQN_Model(input_size=MATRIX_SIZE * MATRIX_SIZE, n_actions=ACTION_SPACE_N).to(DEVICE)
@@ -100,16 +100,16 @@ def run_one_layout(layout="mediumGrid"):
         episode_block=EPISODE_BLOCK,
         use_pretrained=USE_PRETRAINED,
         save_between_steps=SAVE_BETWEEN_STEPS,
-        view_distance=(20, 20)
+        view_distance=(30, 30)
     )
     agents = [pacman_agent, ghost_agent_0, ghost_agent_1]
     # agents.extend(get_default_agents(3, 10))
     done = False
-    env = PacmanEnvAbs(agents=agents, view_distance=(2, 2))
+    env = PacmanEnvAbs(agents=agents, view_distance=(30, 30))
     game_state = env.reset(enable_render=True, layout_name=layout)
     turn_index = 0
     while not done:
-        view = process_state(game_state, (20, 20), turn_index)
+        view = process_state(game_state, (30, 30), turn_index)
         print(view)
 
         action = agents[turn_index].getAction(game_state)
@@ -122,6 +122,6 @@ def run_one_layout(layout="mediumGrid"):
 
 if __name__ == '__main__':
     # run_one_layout("contestClassic")
-    # run_one_layout("trickyClassic")
+    #  run_one_layout("trickyClassic")
     run_one_layout("originalClassic")
     # run_one_layout("smallGrid")
