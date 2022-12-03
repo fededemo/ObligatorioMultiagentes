@@ -51,8 +51,10 @@ SAVE_BETWEEN_STEPS = 100000
 
 MATRIX_SIZE = 30
 ACTION_SPACE_N = 5
-AGENT_INDEX = 1
+AGENT_INDEX = 2
 ENV_NAME = 'GhostDQN'
+
+VIEW_DISTANCE = (2,2) 
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(DEVICE)
@@ -69,7 +71,7 @@ def run_one_layout(layout="mediumGrid"):
     pacman_agent = RandomPacman(index=0)
     # ghost_agent_0 = RandomGhost(index=1)
     ghost_agent_0 = MaxNAgent(index=1, unroll_type="MCTS", max_unroll_depth=12, number_of_unrolls=6,
-                              view_distance=(30, 30))
+                              view_distance=VIEW_DISTANCE)
 
     net_a = DQN_Model(input_size=MATRIX_SIZE * MATRIX_SIZE, n_actions=ACTION_SPACE_N).to(DEVICE)
     net_b = DQN_Model(input_size=MATRIX_SIZE * MATRIX_SIZE, n_actions=ACTION_SPACE_N).to(DEVICE)
@@ -100,16 +102,16 @@ def run_one_layout(layout="mediumGrid"):
         episode_block=EPISODE_BLOCK,
         use_pretrained=USE_PRETRAINED,
         save_between_steps=SAVE_BETWEEN_STEPS,
-        view_distance=(30, 30)
+        view_distance=VIEW_DISTANCE
     )
     agents = [pacman_agent, ghost_agent_0, ghost_agent_1]
     # agents.extend(get_default_agents(3, 10))
     done = False
-    env = PacmanEnvAbs(agents=agents, view_distance=(30, 30))
+    env = PacmanEnvAbs(agents=agents, view_distance=VIEW_DISTANCE)
     game_state = env.reset(enable_render=True, layout_name=layout)
     turn_index = 0
     while not done:
-        view = process_state(game_state, (30, 30), turn_index)
+        view = process_state(game_state, VIEW_DISTANCE, turn_index)
         print(view)
 
         action = agents[turn_index].getAction(game_state)
@@ -122,6 +124,6 @@ def run_one_layout(layout="mediumGrid"):
 
 if __name__ == '__main__':
     # run_one_layout("contestClassic")
-    #  run_one_layout("trickyClassic")
-    run_one_layout("originalClassic")
+    run_one_layout("trickyClassic")
+    #run_one_layout("originalClassic")
     # run_one_layout("smallGrid")
