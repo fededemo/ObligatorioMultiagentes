@@ -54,7 +54,7 @@ ACTION_SPACE_N = 5
 AGENT_INDEX = 2
 ENV_NAME = 'GhostDQN'
 
-VIEW_DISTANCE = (2,2) 
+VIEW_DISTANCE = (10,10) 
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(DEVICE)
@@ -124,6 +124,6 @@ def run_one_layout(layout="mediumGrid"):
 
 if __name__ == '__main__':
     # run_one_layout("contestClassic")
-    run_one_layout("trickyClassic")
-    #run_one_layout("originalClassic")
+    # run_one_layout("trickyClassic")
+    run_one_layout("originalClassic")
     # run_one_layout("smallGrid")
