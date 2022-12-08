@@ -79,15 +79,15 @@ En el caso de ser (5,6) una posible visión del ghost, seria:
 
 Donde cada número simboliza un elemento:
 
-- ` `0: empty
-- ` `1: wall
-- ` `2: food
-- ` `3: capsule
-- ` `4: ghost
-- ` `5: scared ghost
-- ` `6: Pac-Man
-- ` `7: playing ghost
-- ` `8: playing scared ghost
+- `0: empty `
+- `1: wall `
+- `2: food`
+- `3: capsule`
+- `4: ghost`
+- `5: scared ghost`
+- `6: Pac-Man`
+- `7: playing ghost`
+- `8: playing scared ghost`
 
 Tomando los elementos anteriores presentes en el campo de visión acotado para cada agente, se construyó la una función de evaluación que retorna la recompensa acumulada para cada agente (en cada turno) y en base a una serie de situaciones:
 
@@ -164,47 +164,48 @@ En este problema podemos usar Deep Q Learning para entrenar a un Ghost que naveg
 
 La arquitectura que utilizamos tiene dos componentes principales: una serie de capas totalmente conectadas (nn.Linear) que procesan los datos de entrada y un clasificador que asigna los datos de entrada procesados a las predicciones de salida del modelo. El número de predicciones de salida se especifica mediante el parámetro n\_actions, que se pasa al método \_\_init\_\_ cuando se inicializa el modelo:
 
-class DQN\_Model(nn.Module):
+```
+class DQN_Model(nn.Module):
+    def __init__(self, input_size, n_actions: int):
+        super().__init__()
+        self.nn = nn.Sequential(
+            nn.Linear(input_size, 256),
+            nn.ReLU(True),
+            nn.Linear(256, 512),
+            nn.ReLU(True)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(512, n_actions)
+        )
 
-`    `def \_\_init\_\_(self, input\_size, n\_actions: int):
-
-`        `super().\_\_init\_\_()
-
-`        `self.nn = nn.Sequential(
-
-`            `nn.Linear(input\_size, 256),
-
-`            `nn.ReLU(True),
-
-`            `nn.Linear(256, 512),
-
-`            `nn.ReLU(True)
-
-`        `)
-
-`        `self.classifier = nn.Sequential(
-
-`            `nn.Linear(512, n\_actions)
-
-`        `)
-
-`    `def forward(self, env\_input):
-
-`        `x = torch.flatten(env\_input, start\_dim=1)
-
-`        `x = self.nn(x)
-
-`        `x = self.classifier(x)
-
-`        `return x
+    def forward(self, env_input):
+        x = torch.flatten(env_input, start_dim=1)
+        x = self.nn(x)
+        x = self.classifier(x)
+        return x
+```
 
 La implementación que realizamos, fue en base al trabajo final desarrollado para Agentes Inteligentes (ver [repositorio](https://github.com/fededemo/ObligatorioTallerIA)). De todas formas, tuvimos que realizarle algunas adaptaciones para lograr obtener el funcionamiento deseado:
 #### Convertir acciones a índice
 Esto lo realizamos en el archivo **abstract\_agent.py** a modo de poder usar las acciones como input en nuestro modelo y al output, interpretarlo como una acción. Para lograrlo, definimos dos diccionarios, action\_to\_index e index\_to\_action, que se utilizan para mapear acciones (por ejemplo, moverse hacia el norte, sur, este, oeste o detenerse) a índices numéricos y viceversa. 
 
+```
+        self.action_to_index = {
+            Directions.NORTH: 0,
+            Directions.SOUTH: 1,
+            Directions.EAST: 2,
+            Directions.WEST: 3,
+            Directions.STOP: 4
+        }
 
-|`        `self.action\_to\_index = {<br>`            `Directions.NORTH: 0,<br>`            `Directions.SOUTH: 1,<br>`            `Directions.EAST: 2,<br>`            `Directions.WEST: 3,<br>`            `Directions.STOP: 4<br>`        `}<br><br>`        `self.index\_to\_action = {<br>`            `0: Directions.NORTH,<br>`            `1: Directions.SOUTH,<br>`            `2: Directions.EAST,<br>`            `3: Directions.WEST,<br>`            `4: Directions.STOP<br>`        `}|
-| :- |
+        self.index_to_action = {
+            0: Directions.NORTH,
+            1: Directions.SOUTH,
+            2: Directions.EAST,
+            3: Directions.WEST,
+            4: Directions.STOP
+        }
+```
 
 #### Filtrado de Legal Actions
 La red, en ciertos momentos, nos puede dar una acción que no está dentro de las legales (por ejemplo, puede existir en ese lugar una pared, etc). Para solucionar este problema, limitamos la selección de la mejor acción a la mejor que se encuentra dentro de las legales. Esto fue implementado en la función **\_predict\_action**.
@@ -214,43 +215,36 @@ Para realizar el entrenamiento, con la idea de poder usar siempre una misma red 
 
 El entrenamiento fue realizado en una notebook (**ghost\_dqn\_training.ipynb)** en Colab** en base a los siguientes hiperparametros:
 
-*TOTAL\_STEPS = 50000000*
+```
+TOTAL_STEPS = 50000000
+EPISODES = 100000
+STEPS = 100000
 
-*EPISODES = 100000*
+EPSILON_INI = 1
+EPSILON_MIN = 0.02
+EPSILON_TIME = (EPSILON_INI - EPSILON_MIN) * TOTAL_STEPS
 
-*STEPS = 100000*
+EPISODE_BLOCK = 10
+USE_PRETRAINED = True
 
-*EPSILON\_INI = 1*
+BATCH_SIZE = 32
+BUFFER_SIZE = 10000
 
-*EPSILON\_MIN = 0.02*
+GAMMA = 0.99
+LEARNING_RATE = 0.0001
 
-*EPSILON\_TIME = (EPSILON\_INI - EPSILON\_MIN) \* TOTAL\_STEPS*
+SAVE_BETWEEN_STEPS = 100000
 
-*EPISODE\_BLOCK = 10*
+MATRIX_SIZE = 30
+ACTION_SPACE_N = 5
+AGENT_INDEX = 1
+ENV_NAME = 'GhostDQN'
 
-*USE\_PRETRAINED = True*
-
-*BATCH\_SIZE = 32*
-
-*BUFFER\_SIZE = 10000*
-
-*GAMMA = 0.99*
-
-*LEARNING\_RATE = 0.0001*
-
-*SAVE\_BETWEEN\_STEPS = 100000*
-
-*MATRIX\_SIZE = 30*
-
-*ACTION\_SPACE\_N = 5*
-
-*AGENT\_INDEX = 1*
-
-*ENV\_NAME = 'GhostDQN'*
+```
 
 # Resultados
 
-En las siguientes tablas mostramos, para algunos layouts, las rewards promedio (calculadas realizando 70 iteraciones) de uno de nuestros tres Ghost (DQN Ghost, MC Ghost y MCTS Ghost) versus las obtenidas por el random en los tres test realizados. Nuestro objetivo es ganarle a Random en al menos uno de los test:
+En las siguientes tablas mostramos, para algunos layouts, las rewards promedio (calculadas realizando 50 iteraciones) de uno de nuestros tres Ghost (DQN Ghost, MC Ghost y MCTS Ghost) versus las obtenidas por el random en los tres test realizados. Nuestro objetivo es ganarle a Random en al menos uno de los test:
 
 *Tabla 1: Layout Original Classic*
 
