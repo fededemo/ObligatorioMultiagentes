@@ -280,7 +280,7 @@ El ambiente de la tabla anterior y tal como se puede observar en la columna Avg 
 
 Los testeos los realizamos en los 9 layouts donde se permitían al menos dos Ghosts. En el Anexo I se pueden ver todos los resultados de las pruebas “Ghost implementado vs Random Ghost” y en el único que no somos vencedores, es en el layout *trappedClassic*. 
 
-En tres layouts (custom1, originalClassic y trickyClassic) se permitían al menos cuatro Ghosts al mismo tiempo. Realizamos el test con 70 iteraciones y en verde, podemos observar los agentes nuestros que tuvieron un desempeño mejor al random:
+En tres layouts (custom1, originalClassic y trickyClassic) se permitían al menos cuatro Ghosts al mismo tiempo. Realizamos el test con 50 iteraciones y en verde, podemos observar los agentes nuestros que tuvieron un desempeño mejor al random:
 
 
 
